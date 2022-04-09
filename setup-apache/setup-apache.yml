@@ -1,0 +1,36 @@
+---
+- hosts: web_servers
+  tasks:
+    - name: Install packages
+      yum:
+        name: httpd, firewalld
+        state: present
+
+    - name: Start and Enabled services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      with_items:
+        - httpd
+        - firewalld
+
+    - name: Change Apache port
+      replace:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: "Listen 80"
+        replace: "Listen 8082"
+
+    - name: Restart Apache service
+      service:
+        name: httpd
+        state: restarted
+
+    - name: Add firewall rule for httpd  to all incoming traffic
+      firewalld:
+        port: 8082/tcp
+        zone: public
+        permanent: yes
+        state: enabled
+        immediate: true
+    - ser
